@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="nav-semanas">
+    {% if semana_anterior %}
+        <a href="/semana/{{ semana_anterior }}">← Semana anterior</a>
+    {% endif %}
+
+    <span class="titulo-semana">Semana {{ semana }}</span>
+
+    {% if semana_seguinte %}
+        <a href="/semana/{{ semana_seguinte }}">Semana seguinte →</a>
+    {% endif %}
+</div>
+
+<div class="btn-hoje-container">
+    <a class="btn-hoje" href="/hoje">Hoje</a>
+</div>
+
+<!-- BOTÃO EXPORTAR PDF -->
+<div class="btn-exportar-container">
+    <button class="btn-exportar" onclick="window.print()">Exportar PDF</button>
+</div>
+
+<!-- FILTRO -->
+<form method="POST" class="filtro-container">
+    <label for="colaborador">Filtrar por colaborador:</label>
+    <select name="colaborador" id="colaborador">
+        <option value="Todos">Todos</option>
+        {% for c in colaboradores %}
+            <option value="{{ c }}" {% if c == colaborador_selecionado %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn-filtrar">Filtrar</button>
+</form>
+
+<table class="tabela-semana">
+    <thead>
+        <tr>
+            <th>Colaborador</th>
+            {% for d in datas %}
+                <th>{{ d }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for linha in matriz %}
+            <tr>
+                <td class="colab">
+                    <a href="/colaborador/{{ linha.colaborador }}">{{ linha.colaborador }}</a>
+                </td>
+
+
+                {% for dia in linha.dias %}
+                    <td class="{{ dia.classe_cor }}">
+                        <div class="regime">{{ dia.regime }}</div>
+
+                        {% if dia.regime not in ["Folga", "Férias"] and dia.horario %}
+                            <div class="horario">{{ dia.horario }}</div>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

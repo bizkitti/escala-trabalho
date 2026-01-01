@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="btn-voltar-container">
+    <a href="javascript:history.back()" class="btn-voltar">← Voltar</a>
+</div>
+
+<h2 class="titulo-colaborador">Colaborador: {{ nome }}</h2>
+
+<div class="resumo-colaborador">
+    <div class="resumo-item">Dias trabalhados: <strong>{{ total_trabalhados }}</strong></div>
+    <div class="resumo-item">Folgas: <strong>{{ total_folgas }}</strong></div>
+    <div class="resumo-item">Férias: <strong>{{ total_ferias }}</strong></div>
+</div>
+
+<hr>
+
+<h3>Histórico Semanal</h3>
+
+{% for semana in historico %}
+    <div class="semana-bloco">
+        <h4>Semana {{ semana.semana }}</h4>
+
+        <table class="tabela-colaborador">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Regime</th>
+                    <th>Horário</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for dia in semana.dias %}
+                    <tr class="{{ dia.classe_cor }}">
+                        <td>{{ dia.data }}</td>
+                        <td>{{ dia.regime }}</td>
+                        <td>
+                            {% if dia.regime not in ["Folga", "Férias"] %}
+                                {{ dia.horario }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endfor %}
+
+{% endblock %}

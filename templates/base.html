@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Escala de Trabalho</title>
+
+    <!-- CSS principal -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <!-- Configurações da PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#007bff">
+</head>
+
+<body>
+
+    <!-- Botão Modo Escuro -->
+    <div class="darkmode-container">
+        <button id="toggle-darkmode" class="btn-darkmode">Modo Escuro</button>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <!-- Script do modo escuro -->
+    <script>
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+            document.body.classList.add("dark-mode");
+        }
+
+        const btn = document.getElementById("toggle-darkmode");
+
+        function updateButtonText() {
+            btn.textContent = document.body.classList.contains("dark-mode") ? "Modo Claro" : "Modo Escuro";
+        }
+
+        updateButtonText();
+
+        btn.addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+            localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+            updateButtonText();
+        });
+    </script>
+
+    <!-- Script do Service Worker (PWA) -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/static/service-worker.js")
+                .then(() => console.log("Service Worker registado"))
+                .catch(err => console.error("Erro no SW:", err));
+        }
+    </script>
+
+</body>
+</html>
