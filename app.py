@@ -24,8 +24,8 @@ def carregar_escala():
     # Dia da semana (Seg=0 ... Dom=6)
     df["DiaNum"] = df["Data"].dt.weekday
 
-    # Ordenar por colaborador e data
-    df = df.sort_values(by=["Colaborador", "Data"])
+    # Ordenar corretamente por ano, semana, colaborador e data
+    df = df.sort_values(by=["ISO_Ano", "ISO_Semana", "Colaborador", "Data"])
 
     return df
 
