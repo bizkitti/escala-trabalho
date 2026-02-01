@@ -24,14 +24,11 @@ def carregar_escala():
     # Dia da semana (Seg=0 ... Dom=6)
     df["DiaNum"] = df["Data"].dt.weekday
 
-    # Ordenar corretamente por ano, semana, colaborador e data
+    # ORDENAR CORRETAMENTE
     df = df.sort_values(by=["ISO_Ano", "ISO_Semana", "Colaborador", "Data"])
 
     return df
 
-
-df = carregar_escala()
-lista_colaboradores = sorted(df["Colaborador"].unique())
 
 # -----------------------------
 # 2. Normalização dos horários
@@ -81,7 +78,7 @@ def datas_da_semana(semana_iso):
 # -----------------------------
 # 5. Gerar matriz semanal
 # -----------------------------
-def gerar_matriz_semana(semana_iso, colaborador=None):
+def gerar_matriz_semana(df, semana_iso, colaborador=None):
     dados = df[df["SemanaISO"] == semana_iso].copy()
 
     if colaborador and colaborador != "Todos":
@@ -148,6 +145,7 @@ def hoje():
 
 @app.route("/semana/<semana_iso>", methods=["GET", "POST"])
 def ver_semana(semana_iso):
+    df = carregar_escala()  # ← recarrega sempre
     colaborador = request.form.get("colaborador", "Todos")
 
     semanas = sorted(df["SemanaISO"].unique())
@@ -159,8 +157,9 @@ def ver_semana(semana_iso):
     semana_anterior = semanas[idx - 1] if idx > 0 else None
     semana_seguinte = semanas[idx + 1] if idx < len(semanas) - 1 else None
 
-    matriz = gerar_matriz_semana(semana_iso, colaborador)
+    matriz = gerar_matriz_semana(df, semana_iso, colaborador)
     datas = datas_da_semana(semana_iso)
+    lista_colaboradores = sorted(df["Colaborador"].unique())
 
     return render_template(
         "semana.html",
@@ -173,21 +172,22 @@ def ver_semana(semana_iso):
         colaboradores=lista_colaboradores,
         colaborador_selecionado=colaborador
     )
+
+
 # -----------------------------
-# 8. Página do colaborador
+# 7. Página do colaborador
 # -----------------------------
 @app.route("/colaborador/<nome>")
 def pagina_colaborador(nome):
-    # Filtrar dados do colaborador
+    df = carregar_escala()  # ← recarrega sempre
+
     dados = df[df["Colaborador"] == nome].copy()
 
     if dados.empty:
         return f"Colaborador '{nome}' não encontrado."
 
-    # Criar lista de semanas únicas
     semanas = sorted(dados["SemanaISO"].unique())
 
-    # Criar histórico semanal
     historico = []
     for semana in semanas:
         semana_dados = dados[dados["SemanaISO"] == semana]
@@ -208,7 +208,6 @@ def pagina_colaborador(nome):
             "dias": dias
         })
 
-    # Totais
     total_folgas = sum(dados["Regime"].str.lower() == "folga")
     total_ferias = sum(dados["Regime"].str.lower() == "férias")
     total_trabalhados = len(dados) - total_folgas - total_ferias
@@ -222,7 +221,9 @@ def pagina_colaborador(nome):
         total_trabalhados=total_trabalhados
     )
 
+
+# -----------------------------
+# 8. Execução
+# -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
-
