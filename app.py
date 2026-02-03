@@ -19,12 +19,14 @@ def carregar_escala():
     # Criar colunas ISO reais
     df["ISO_Ano"] = df["Data"].apply(lambda d: d.isocalendar().year)
     df["ISO_Semana"] = df["Data"].apply(lambda d: d.isocalendar().week)
-    df["SemanaISO"] = df["ISO_Ano"].astype(str) + "-" + df["ISO_Semana"].astype(str)
+
+    # Semana ISO com zero à esquerda (ESSENCIAL para ordenar corretamente)
+    df["SemanaISO"] = df["ISO_Ano"].astype(str) + "-" + df["ISO_Semana"].astype(str).str.zfill(2)
 
     # Dia da semana (Seg=0 ... Dom=6)
     df["DiaNum"] = df["Data"].dt.weekday
 
-    # ORDENAR CORRETAMENTE
+    # Ordenação correta
     df = df.sort_values(by=["ISO_Ano", "ISO_Semana", "Colaborador", "Data"])
 
     return df
@@ -139,13 +141,13 @@ def index():
 def hoje():
     ano = datetime.now().isocalendar().year
     semana = datetime.now().isocalendar().week
-    semana_iso = f"{ano}-{semana}"
+    semana_iso = f"{ano}-{str(semana).zfill(2)}"
     return redirect(url_for("ver_semana", semana_iso=semana_iso))
 
 
 @app.route("/semana/<semana_iso>", methods=["GET", "POST"])
 def ver_semana(semana_iso):
-    df = carregar_escala()  # ← recarrega sempre
+    df = carregar_escala()  # Recarrega sempre
     colaborador = request.form.get("colaborador", "Todos")
 
     semanas = sorted(df["SemanaISO"].unique())
@@ -179,7 +181,7 @@ def ver_semana(semana_iso):
 # -----------------------------
 @app.route("/colaborador/<nome>")
 def pagina_colaborador(nome):
-    df = carregar_escala()  # ← recarrega sempre
+    df = carregar_escala()  # Recarrega sempre
 
     dados = df[df["Colaborador"] == nome].copy()
 
